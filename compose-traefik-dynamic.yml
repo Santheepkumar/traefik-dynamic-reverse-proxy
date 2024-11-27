@@ -1,0 +1,26 @@
+services:
+  traefik-proxy:
+    container_name: traefik-proxy
+    image: traefik:3.2.1
+    ports:
+      - 8080:8080
+      - 80:80
+    volumes:
+      - ./traefik.yml:/etc/traefik/traefik.yml
+      - /var/run/docker.sock:/var/run/docker.sock
+    networks:
+      - proxy
+
+  nginx-proxy:
+    image: nginx:latest
+    container_name: nginx-proxy
+    labels:
+      - 'traefik.enable=true'
+      - 'traefik.http.routers.nginx-test.rule=Host(`nginx-proxy.docker.localhost`)'
+      - 'traefik.http.services.nginx-test.loadbalancer.server.port=80'
+    networks:
+      - proxy
+
+networks:
+  proxy:
+    driver: bridge
